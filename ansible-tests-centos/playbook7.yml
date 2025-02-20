@@ -1,0 +1,45 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Update metadata.
+      command: yum makecache
+
+    - name: List available updates (all packages) on target machine.
+      shell: yum check-update
+      register: all_updates
+      failed_when: false  # Allow non-zero return code without causing a failure
+
+    - name: List available security updates on target machine.
+      shell: yum update --security
+      register: security_updates
+      failed_when: false  # Allow non-zero return code without causing a failure
+
+    - name: List available kernel updates on target machine.
+      shell: yum list available kernel
+      register: kernel_updates
+      failed_when: false  # Allow non-zero return code without causing a failure
+
+    - name: Collect updates information from all hosts.
+      set_fact:
+        all_updates_collected: "{{ all_updates_collected | default([]) + [ { 'host': inventory_hostname, 'all_updates': all_updates.stdout, 'security_updates': security_updates.stdout, 'kernel_updates': kernel_updates.stdout } ] }}"
+
+- hosts: localhost
+  tasks:
+    - name: Append available updates to a file on the local machine.
+      blockinfile:
+        path: "/tmp/available_updates.txt"
+        block: |
+          {% for host in groups['all'] %}
+          # Updates from {{ host }}
+          ## All available updates:
+          {{ hostvars[host].all_updates.stdout }}
+          
+          ## Security updates:
+          {{ hostvars[host].security_updates.stdout }}
+          
+          ## Kernel updates:
+          {{ hostvars[host].kernel_updates.stdout }}
+          {% endfor %}
+        create: yes
+

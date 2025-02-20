@@ -1,0 +1,18 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Update metadata.
+      command: dnf makecache
+
+    - name: List available patches and updates and save output to file on local machine.
+      shell: dnf updateinfo list available
+      register: available_updates
+
+    - name: Save available updates to a file on local machine.
+      lineinfile:
+        path: "/tmp/available_updates.txt"
+        line: "{{ available_updates.stdout }}"
+        create: yes
+      delegate_to: localhost
+

@@ -1,0 +1,21 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Update metadata.
+      command: dnf makecache
+
+    - name: List available patches and updates on target machine.
+      shell: dnf updateinfo list available
+      register: available_updates
+
+    - name: Append available updates to a file on the local machine.
+      blockinfile:
+        path: "/tmp/available_updates.txt"
+        block: |
+          # Updates from {{ inventory_hostname }}
+          {{ available_updates.stdout }}
+        create: yes
+      delegate_to: localhost
+      run_once: true
+
