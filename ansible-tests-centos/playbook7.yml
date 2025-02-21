@@ -11,7 +11,7 @@
       failed_when: false  # Allow non-zero return code without causing a failure
 
     - name: List available security updates on target machine.
-      shell: yum update --security
+      shell: yum updateinfo list security
       register: security_updates
       failed_when: false  # Allow non-zero return code without causing a failure
 

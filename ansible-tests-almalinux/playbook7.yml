@@ -3,20 +3,20 @@
   become: yes
   tasks:
     - name: Update metadata.
-      command: yum makecache
+      command: dnf makecache
 
     - name: List available updates (all packages) on target machine.
-      shell: yum check-update
+      shell: dnf check-update
       register: all_updates
       failed_when: false  # Allow non-zero return code without causing a failure
 
     - name: List available security updates on target machine.
-      shell: yum update --security
+      shell: dnf update --security --assumeno
       register: security_updates
       failed_when: false  # Allow non-zero return code without causing a failure
 
     - name: List available kernel updates on target machine.
-      shell: yum list available kernel
+      shell: dnf list available kernel
       register: kernel_updates
       failed_when: false  # Allow non-zero return code without causing a failure
 

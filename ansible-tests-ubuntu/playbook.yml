@@ -3,20 +3,20 @@
   become: yes
   tasks:
     - name: Update metadata.
-      command: dnf makecache
+      command: apt update
 
     - name: List available updates (all packages) on target machine.
-      shell: dnf check-update
+      shell: apt list --upgradable
       register: all_updates
       failed_when: false  # Allow non-zero return code without causing a failure
 
     - name: List available security updates on target machine.
-      shell: dnf update --security
+      shell: apt list --upgradable | grep -i security
       register: security_updates
       failed_when: false  # Allow non-zero return code without causing a failure
 
     - name: List available kernel updates on target machine.
-      shell: dnf list available kernel
+      shell: apt list --upgradable | grep -E 'linux-.*'
       register: kernel_updates
       failed_when: false  # Allow non-zero return code without causing a failure
 
@@ -34,10 +34,10 @@
           # Updates from {{ host }}
           ## All available updates:
           {{ hostvars[host].all_updates.stdout }}
-          
+
           ## Security updates:
           {{ hostvars[host].security_updates.stdout }}
-          
+
           ## Kernel updates:
           {{ hostvars[host].kernel_updates.stdout }}
           {% endfor %}
